@@ -1,19 +1,5 @@
-function formatDate(date){
-    let d = date.toISOString().split('T')[0];
-    let d2 = d.split('-');
-    let day = d2[2];
-    let month = d2[1];
-    let year = d2[0];
-    return `${day}.${month}.${year}`;
-}
-
-function reformatDate(date){
-    let d = date.split('.');
-    let day = d[0];
-    let month = d[1];
-    let year = d[2];
-    return `${year}-${month}-${day}`;
-}
+const formatDate = require('./utils').formatDate;
+const reformatDate = require('./utils').reformatDate;
 
 module.exports = {
     getEmployees: (req, res, next) => {
@@ -152,6 +138,72 @@ module.exports = {
                 throw err;
             }
             res.status(200).send();
+            next();
+        });
+    },
+
+    getMeetings: (req, res, next) => {
+        let query = `SELECT id, name, location, hall, equipment, DATE_FORMAT(date, "%d.%m.%Y") as date, start_hour as startHour, end_hour as endHour FROM events;`;
+        db.query(query, (err, response) => {
+            if(err) {
+                res.status(500).send(err);
+                throw err;
+            }
+            res.status(200).send(response);
+            next();
+        });
+    },
+
+    addMeeting: (req, res, next) => {
+        let {name, location, hall, equipment, date, startHour, endHour} = req.body;
+        let dateFormat = '%d.%m.%Y';
+        let query = `INSERT INTO events (name, location, hall, equipment, date, start_hour, end_hour) VALUES 
+                    ('${name}', '${location}', '${hall}', '${equipment}', STR_TO_DATE('${date}', '${dateFormat}'), ${startHour}, ${endHour});`;
+        db.query(query, (err, response) => {
+            if(err) {
+                res.status(500).send(err);
+                throw err;
+            }
+            res.status(200).send();
+            next();
+        });
+    },
+
+    getAvailableParticipants: (req, res, next) => {
+        let query = `SELECT id, CONCAT(firstname, ' ', lastname) as name, email FROM employees WHERE start_hour <= ${req.query.startHour} AND end_hour >= ${req.query.endHour};`;
+        db.query(query, (err, response) => {
+            if(err) {
+                res.status(500).send(err);
+                throw err;
+            }
+            res.status(200).send(response);
+            next();
+        });
+    },
+
+    addParticipants: (req, res, next) => {
+        let {eventID, employees} = req.body;
+        employees.forEach(employee => {
+            let query = `INSERT INTO event_participants (event_id, employee_id) VALUES (${eventID}, ${employee.id});`;
+            db.query(query, (err, response) => {
+                if(err) {
+                    res.status(500).send(err);
+                    throw err;
+                }
+            });
+        });
+        res.status(200).send();
+        next();
+    },
+
+    getParticipants: (req, res, next) => {
+        let query = `SELECT CONCAT(e.firstname, ' ', e.lastname) as name, e.email FROM employees e JOIN event_participants ep ON e.id = ep.employee_id WHERE ep.event_id = ${req.query.id};`;
+        db.query(query, (err, response) => {
+            if(err) {
+                res.status(500).send(err);
+                throw err;
+            }
+            res.status(200).send(response);
             next();
         });
     }

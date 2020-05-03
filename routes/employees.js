@@ -9,4 +9,9 @@ module.exports = (router) => {
     router.delete('/employees/deleteEmployee', controller.deleteEmployee);
     router.get('/employees/getContracts', controller.getContracts);
     router.post('/employees/editContract', controller.editContract);
+    router.get('/employees/getMeetings', controller.getMeetings);
+    router.post('/employees/addMeeting', controller.addMeeting);
+    router.get('/employees/getAvailableParticipants', controller.getAvailableParticipants);
+    router.post('/employees/addParticipants', controller.addParticipants);
+    router.get('/employees/getParticipants', controller.getParticipants);
 }
