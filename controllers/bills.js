@@ -3,7 +3,7 @@ const reformatDate = require('./utils').reformatDate;
 
 function getCompanyBills(){
     return new Promise((resolve, reject) => {
-        let query = `SELECT b.id, cp.name as companyName, s.name as serviceName, b.price, b.currency_rate, DATE_FORMAT(b.due_date, "%d.%m.%Y") as dueDate, b.paid FROM bills b JOIN customers c ON b.customer_id = c.id 
+        let query = `SELECT b.id, cp.name as customerName, s.name as serviceName, b.price, b.currency_rate, DATE_FORMAT(b.due_date, "%d.%m.%Y") as dueDate, b.paid FROM bills b JOIN customers c ON b.customer_id = c.id 
                     JOIN companies cp ON c.company_id = cp.id JOIN services s ON s.id = b.service_id WHERE c.company_id IS NOT NULL;`;
 
         db.query(query, (err, response) => {
